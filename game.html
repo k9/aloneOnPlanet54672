@@ -1,54 +1,38 @@
 <!DOCTYPE html>
-<html><body>
+<html><body style="background: #6d6d6d">
 <div id="game" style="width: 800px; margin: 0 auto"></div>
 <script src="lightgl.js"></script>
 <script src="utils.js"></script>
+<script src="shaders.js"></script>
 <script src="render.js"></script>
 <script src="terrain.js"></script>
 <script>
 var angle = 0;
 var gl = GL.create();
-var shaders = {
-    car: new GL.Shader('\
-        void main() {\
-            gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\
-        }\
-        ', '\
-        void main() {\
-            gl_FragColor = vec4(0.4, 0.4, 0.4, 1.0);\
-        }\
-    '),
-    trail: new GL.Shader('\
-        void main() {\
-            gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\
-        }\
-        ', '\
-        void main() {\
-            gl_FragColor = vec4(0.4, 0.4, 1.0, 1.0);\
-        }\
-    '),
-    ground: new GL.Shader('\
-        void main() {\
-            gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\
-        }\
-        ', '\
-        uniform vec4 color;\
-        void main() {\
-            gl_FragColor = color;\
-        }\
-    ')
-};
-
+var shaders = new Shaders();
 var terrain = new LevelOne();
 
+var car = { 
+    x: 300, 
+    y: 0, 
+    mesh: new GL.Mesh.sphere({ detail: 6, normals: true }),
+    fuelCell: new GL.Mesh.sphere({ detail: 6, normals: true }),
+    trailMesh: new GL.Mesh() 
+};
 
-var car = { x: 300, y: 0, mesh: new GL.Mesh.sphere(), trailMesh: new GL.Mesh() };
-car.trailMesh.triangles = new Array(10 * 3);
-for(var i = 0; i < 10; i++) {
-    car.trailMesh.triangles[i * 3] = [Math.random() * 0.5 - 0.5, Math.random() * 0.5 - 0.5, 0];
-    car.trailMesh.triangles[i * 3 + 1] = [Math.random() * 0.5 - 0.5, Math.random() * 0.5 - 0.5, 0];
-    car.trailMesh.triangles[i * 3 + 2] = [Math.random() * 0.5 - 0.5, Math.random() * 0.5 - 0.5, 0];
+var trailSize = 30;
+car.trailMesh.triangles = new Array(trailSize * 3);
+car.trailMesh.indices = new Array(trailSize * 3)
+for(var i = 0; i < trailSize; i++) {
+    var x = i / trailSize;
+    car.trailMesh.vertices[i * 3] = [-(0.4 + x), 1 - x, 0];
+    car.trailMesh.vertices[i * 3 + 1] = [-(0.4 + x), -1 + x, 0];
+    car.trailMesh.vertices[i * 3 + 2] = [-x, 0, 0];
+    car.trailMesh.triangles[i * 3] = i * 3;
+    car.trailMesh.triangles[i * 3 + 1] = i * 3 + 1;
+    car.trailMesh.triangles[i * 3 + 2] = i * 3 + 2;
 }
+car.trailMesh.compile();
 
 
 //wasd, 87 65 83 68
@@ -67,7 +51,7 @@ gl.onupdate = function(seconds) {
     if(carState.accelerate)
         carState.speed += 60 * seconds;
     else if(carState.brake)
-        carState.speed -= 50 * seconds;
+        carState.speed -= 60 * seconds;
     else
         carState.speed /= 1 + (seconds / 2);
 
