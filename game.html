@@ -14,6 +14,8 @@ ul { list-style-type: square }
 .bottomText { color: #eee; top: auto; bottom: 10px; left: 10px; right: 10px; padding: 12px 12px 2px; text-align: center;
         background: rgba(1,1,1,0.5); }
 .text p { margin: 0 0 10px 0 }
+#loading { position: absolute; top: 0; right: 0; width: 800px; height: 600px; background: #eee; color: #444; }
+#loading h1 {  letter-spacing: -3px; margin-top: 275px; text-align: center; font-size: 40px; }
 </style>
 </head>
 <p id="pos"></p>
@@ -32,6 +34,8 @@ ul { list-style-type: square }
 <div class="text bottomText">
 <p><b>D</b> or <b>&rarr;</b> to go Right <b>| A</b> or &larr; to go Left <b>| R</b> to restart the level <b>| I</b> for instructions</p>
 </div>
+
+<div id="loading"><h1 id="loadingText">Loading...</h1></div>
 </div>
 <script src="libs/lightgl.js"></script>
 <script src="libs/csg.js"></script>
@@ -42,16 +46,40 @@ ul { list-style-type: square }
 <script src="terrain.js"></script>
 <script src="car.js"></script>
 <script>
+var currentLevel = 0;
 var angle = 0;
 var gl = GL.create();
 document.getElementById("game").appendChild(gl.canvas);
 var shaders = new Shaders();
-var terrain = new LevelOne();
 var car = new Car();
-
+var terrain = loadNextLevel();
 var carState = loadCarState();
+
+function loadNextLevel() {
+    currentLevel++;
+    var level;
+    document.getElementById("loading").style.display = "block";
+    if(currentLevel == 1) { level = new LevelOne(); }
+    if(currentLevel == 2) { level = new LevelTwo(); }
+    if(currentLevel == 3) { 
+        document.getElementById("loadingText").textContent = "Success"; 
+        gl.onupdate = null;
+        return; 
+    }
+
+    setTimeout(function() {
+        document.getElementById("loading").style.display = "none";
+    }, 1000);
+        
+    return level;
+}
+
 function loadCarState() {
-    return { x: terrain.carStart, y: 0, speed: 0, accelerate: false, brake: false, fuelAmount: 1, time: 0 }
+    return { 
+        x: terrain.carStart, y: 0, 
+        speed: 0, accelerate: false, brake: false, 
+        fuelAmount: 1, time: 0, finish: false
+    }
 }
 
 //wasd, 87 65 83 68
@@ -73,6 +101,15 @@ document.body.onkeydown = function(e) { keyChange(e.keyCode, true); }
 document.body.onkeyup = function(e) { keyChange(e.keyCode, false); }
 
 gl.onupdate = function(seconds) {
+    if(carState.x > terrain.finishLine ) {
+        if(!carState.finish) {
+            terrain = loadNextLevel(); 
+            carState = loadCarState();
+        }
+        carState.finish = true; 
+        carState.speed = 0; return; 
+    }
+
     carState.time += seconds;
     var lastSpeed = carState.speed;
     carState.accelerate = carState.accelerate && carState.fuelAmount > 0;
@@ -102,7 +139,6 @@ gl.onupdate = function(seconds) {
 
     carState.x += carState.speed * seconds;
     if(carState.x < 505) { carState.x = 505 + 0.01; carState.speed = 1; }
-    if(carState.x > terrain.finishLine ) { carState.speed = 0; }
 
     carState.y = mix(startHeight, endHeight, carState.x - segment);
 

@@ -13,8 +13,8 @@ function Shaders() {
             vec3 light = vec3(-0.75, 0.5, 0.5);\
             vec3 view = normalize(vec3(-gl_ModelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0)));\
 			vec3 spec =  vec3(1.0, 1.0, 1.0) * pow(max(0.0, dot(reflect(-light, normal), view)), 10.0);\
-            float brightness = dot(normal, light) * 0.3 + 0.6;\
-            gl_FragColor = vec4(brightness + spec * 0.05, 1.0);\
+            float brightness = dot(normal, light) * 0.3 + 0.7;\
+            gl_FragColor = vec4(brightness + spec * 0.1, 1.0);\
         }\
     ');
 
@@ -71,6 +71,19 @@ function Shaders() {
         }\
     ');
 
+    this.finish = new GL.Shader('\
+        varying vec3 normal;\
+        void main() {\
+        	normal = gl_Normal;\
+            gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\
+        }\
+        ', '\
+        varying vec3 normal;\
+        void main() {\
+            gl_FragColor = vec4(normal * 0.25 + 0.75, 0.25);\
+        }\
+    ');
+
     this.downTrail = new GL.Shader('\
         uniform float speed;\
         varying float x;\
@@ -93,8 +106,8 @@ function Shaders() {
         ', '\
         uniform vec4 color;\
         void main() {\
-        	float dist = pow(distance(vec2(gl_FragCoord.x / 800.0, gl_FragCoord.y / 600.0), vec2(0.5, 0.5)), 2.0);\
-            gl_FragColor = color - dist * 0.5;\
+        	float dist = pow(distance(vec2(gl_FragCoord.x / 800.0, gl_FragCoord.y / 600.0), vec2(0.5, 0.5)), 3.0);\
+            gl_FragColor = color * 0.8 - dist;\
         }\
     ');
 
@@ -110,8 +123,8 @@ function Shaders() {
         void main() {\
             vec3 light = vec3(-0.75, 0.5, 0.5);\
             float brightness = dot(normal, light) * 0.25 + 0.75;\
-            float dist = pow(distance(vec2(gl_FragCoord.x / 800.0, gl_FragCoord.y / 600.0), vec2(0.5, 0.5)), 2.0);\
-            gl_FragColor = brightness * color - dist * 0.5;\
+            float dist = pow(distance(vec2(gl_FragCoord.x / 800.0, gl_FragCoord.y / 600.0), vec2(0.5, 0.5)), 3.0);\
+            gl_FragColor = brightness * color - dist;\
         }\
     ');
 }

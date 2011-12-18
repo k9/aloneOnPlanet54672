@@ -1,5 +1,5 @@
-var bg = [0.50, 0.60, 1.0, 1.0];
 function mixWithBG(color, m) {
+    var bg = terrain.skyColor;
     return [
         mix(color[0], bg[0], m), 
         mix(color[1], bg[1], m), 
@@ -11,13 +11,13 @@ function mixWithBG(color, m) {
 var oldAcceleration = 5;
 function render() {
     toggleAlpha(false);
-    gl.clearColor(bg[0], bg[1], bg[2], bg[3]);
+    gl.clearColor(terrain.skyColor[0], terrain.skyColor[1], terrain.skyColor[2], terrain.skyColor[3]);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     placeCamera();
     gl.translate(-carState.x, -carState.y, 0);
 
-    var terrainColor = [0.8, 0.4, 0.3, 1];
+    var terrainColor = terrain.terrainColor;
     shaders.terrainNormals.uniforms({ color: terrainColor }).draw(terrain.groundDepth.mesh);
     shaders.terrain.uniforms({ color: terrainColor }).draw(terrain.ground.mesh);
     for(var i = 0; i < terrain.wells.length; i++) {
@@ -68,6 +68,13 @@ function render() {
     if(carState.fuelAmount > 0.01) {
         shaders.fuel.uniforms({ amount: carState.fuelAmount }).draw(car.fuel);
     }
+
+    placeCamera();
+    var pos = terrain.finishLine;
+    gl.translate(pos - carState.x, terrain.ground.height[pos] - carState.y, -5);
+    toggleAlpha(true);
+    shaders.finish.uniforms({ size: 0.75 + Math.sin(carState.time * 5) * 0.5 }).draw(terrain.finishMesh);
+    toggleAlpha(false);
 }
 
 function toggleAlpha(on) {

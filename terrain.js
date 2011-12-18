@@ -52,35 +52,54 @@ function playableHeight(i, h) {
 	return h;
 }
 
-function LevelOne() {
+function initLevel(level, size, groundFn) {
 	var slices = 20;
-	this.wellFuelMesh = CSG.cylinder({ start: [0, -1.25, 0], end: [0, 1.0, 0], radius: 0.7, slices: slices }).toMesh();
-	this.wellMesh = CSG.cylinder({ start: [0, -1.25, 0], end: [0, 1.0, 0], radius: 2.5, slices: slices })
+	level.wellFuelMesh = CSG.cylinder({ start: [0, -1.25, 0], end: [0, 1.0, 0], radius: 0.7, slices: slices }).toMesh();
+	level.wellMesh = CSG.cylinder({ start: [0, -1.25, 0], end: [0, 1.0, 0], radius: 2.5, slices: slices })
 		.subtract(CSG.cylinder({ start: [0, -1.6, 0], end: [0, 1.6, 0], radius: 0.8, slices: slices }))
 		.subtract(CSG.cylinder({ start: [0, 0.7, 0], end: [0, 1.6, 0], radius: 1.25, slices: slices }))
 		.intersect(CSG.sphere({ radius: 4.00, center: [0, -2.5, 0], slices: slices })).toMesh();
 
-	this.carStart = 680;
-	this.finishLine = 3400;
-	this.wells = [716, 940, 1678, 2300, 3200];
+	level.finishMesh = CSG.sphere({ radius: 6.00, center: [0, 3, 0], slices: slices, stacks: slices }).toMesh();
 
-	var groundFn = function(i) { 
-		var h = Math.sin(i / 9) * 1.5 + Math.sin(i / 30) * 5 + Math.sin(i / 40) * 5; 
-		return playableHeight(i, h);
-	};
+	level.ground = makeGroundLayer(size, 1, groundFn, false, false);
+	level.groundDepth = makeGroundLayer(size, 1, groundFn, false, true);
 
-	this.ground = makeGroundLayer(4096, 1, groundFn, false, false);
-	this.groundDepth = makeGroundLayer(4096, 1, groundFn, false, true);
-
-	this.backGround = makeGroundLayer(4096, 4, function(i) { 
+	level.backGround = makeGroundLayer(size, 4, function(i) { 
 		return Math.sin(i / 14) * 2.5 + Math.cos(i / 40) * 5 + 80;  });
 
-	this.backGround2 = makeGroundLayer(4096, 8, function(i) {
+	level.backGround2 = makeGroundLayer(size, 8, function(i) {
     	return Math.sin(i / 16) * 2.5 + Math.sin(i / 50) * 5 + 60; });
 
-	this.backGround3 = makeGroundLayer(4096, 8, function(i) {
+	level.backGround3 = makeGroundLayer(size, 8, function(i) {
     return Math.sin(i / 24) * 2.5 + Math.sin(i / 40) * 5 + 40; });
 
-	this.sky = makeGroundLayer(4096, 8, function(i) {
+	level.sky = makeGroundLayer(size, 8, function(i) {
     	return Math.cos(i / 50) * 2.5 + Math.cos(i / 60) * 2.5 + 350; }, true);
+}
+
+function LevelOne() {
+	this.terrainColor = [0.8, 0.4, 0.3, 1];;
+	this.skyColor = [0.5, 0.6, 1.0, 1.0];
+	this.carStart = 685;
+	this.finishLine = 1400;
+	this.wells = [683, 840];
+
+	initLevel(this, 2048, function(i) { 
+		var h = Math.cos(i / 8) * 2.5 + Math.sin(i / 30) * 8.0 + Math.sin(i / 60) * 3.5; 
+		return playableHeight(i, h);
+	});
+}
+
+function LevelTwo() {
+	this.terrainColor = [0.7, 0.5, 0.4, 1];;
+	this.skyColor = [0.3, 0.4, 1.0, 1.0];
+	this.carStart = 680;
+	this.finishLine = 3400;
+	this.wells = [680, 940, 1678, 2300, 3159];
+
+	initLevel(this, 4096, function(i) { 
+		var h = Math.sin(i / 9) * 1.5 + Math.sin(i / 30) * 5 + Math.sin(i / 40) * 5; 
+		return playableHeight(i, h);
+	});
 }
