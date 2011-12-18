@@ -109,7 +109,7 @@ function Shaders() {
         varying vec3 normal;\
         void main() {\
             vec3 light = vec3(-0.75, 0.5, 0.5);\
-            float brightness = dot(normal, light) * 0.5 + 0.5;\
+            float brightness = dot(normal, light) * 0.25 + 0.75;\
             float dist = pow(distance(vec2(gl_FragCoord.x / 800.0, gl_FragCoord.y / 600.0), vec2(0.5, 0.5)), 2.0);\
             gl_FragColor = brightness * color - dist * 0.5;\
         }\

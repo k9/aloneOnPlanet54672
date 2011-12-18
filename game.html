@@ -1,6 +1,38 @@
 <!DOCTYPE html>
-<html><body style="background: #6d6d6d">
-<div id="game" style="width: 800px; margin: 0 auto"><p id="pos"></p></div>
+<html>
+<body style="background: #6d6d6d">
+<head>
+<title>Game</title>
+<style>
+body { font-family: verdana; color: #eee; font-size: 14px; }
+h1 { font-size: 18px; letter-spacing: -1px; }
+li { margin-bottom: 10px; }
+ul { list-style-type: square }
+#game { position: relative; width: 800px; height: 600px; }
+.text { color: #444; position: absolute; left: 50px; right: 50px; top: 50px; 
+        background: #eee; padding: 50px 50px 40px; border-radius: 10px; }
+.bottomText { color: #eee; top: auto; bottom: 10px; left: 10px; right: 10px; padding: 12px 12px 2px; text-align: center;
+        background: rgba(1,1,1,0.5); }
+.text p { margin: 0 0 10px 0 }
+</style>
+</head>
+<p id="pos"></p>
+<div id="game" style="width: 800px; margin: 0 auto">
+
+<div class="text" id="text1">
+<h1>You have been abondoned by your employer, SpaceExplore Inc.</h1>
+<ul>
+<li>A long way east is a transport away from here.</li>
+<li>You burn fuel all the time; even more when using the left or right thrusters.</li>
+<li>Watch the green fuel guage. Hover over the fuel stations to refuel.</li>
+<li>To get over tough hills, back up and then go forward to gain momentum.</li>
+</ul>
+</div>
+
+<div class="text bottomText">
+<p><b>D</b> or <b>&rarr;</b> to go Right <b>| A</b> or &larr; to go Left <b>| R</b> to restart the level <b>| I</b> for instructions</p>
+</div>
+</div>
 <script src="libs/lightgl.js"></script>
 <script src="libs/csg.js"></script>
 <script src="libs/viewer.js"></script>
@@ -12,18 +44,26 @@
 <script>
 var angle = 0;
 var gl = GL.create();
+document.getElementById("game").appendChild(gl.canvas);
 var shaders = new Shaders();
 var terrain = new LevelOne();
 var car = new Car();
 
 var carState = loadCarState();
 function loadCarState() {
-    return { x: terrain.carStart, y: 0, speed: 0, accelerate: false, brake: false, fuelAmount: 1, acceleration: 0, time: 0 }
+    return { x: terrain.carStart, y: 0, speed: 0, accelerate: false, brake: false, fuelAmount: 1, time: 0 }
 }
 
 //wasd, 87 65 83 68
 //uldr, 38 37 40 39
 function keyChange(code, pressed) { 
+    if(pressed) {
+        if(code == 73)
+            document.getElementById("text1").style.display = "block";
+        else
+            document.getElementById("text1").style.display = "none";
+    }
+
     if(code == 68 || code == 39) carState.accelerate = pressed; 
     if(code == 65 || code == 37) carState.brake = pressed; 
     if(code == 82) carState = loadCarState();
@@ -64,7 +104,6 @@ gl.onupdate = function(seconds) {
     if(carState.x < 505) { carState.x = 505 + 0.01; carState.speed = 1; }
     if(carState.x > terrain.finishLine ) { carState.speed = 0; }
 
-    carState.acceleration = seconds == 0 ? 0 : (carState.speed - lastSpeed) / seconds;
     carState.y = mix(startHeight, endHeight, carState.x - segment);
 
     if(terrain.wells.indexOf(Math.floor(carState.x)) > -1 || terrain.wells.indexOf(Math.ceil(carState.x)) > -1)
@@ -75,11 +114,10 @@ gl.onupdate = function(seconds) {
     else if(carState.fuelAmount > 1)
         carState.fuelAmount = 1;
 
-    document.getElementById("pos").textContent = carState.x + " " + seconds;
+    //document.getElementById("pos").textContent = carState.x + " " + seconds;
 };
 
 setupRender();
-document.getElementById("game").appendChild(gl.canvas);
 gl.ondraw = render;
 gl.animate();
 </script>

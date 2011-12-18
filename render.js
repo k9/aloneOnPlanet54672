@@ -44,7 +44,9 @@ function render() {
     }
     
     placeCamera();
-    gl.translate(0, 5 + 0.25 * Math.sin(carState.time * 5), -5.0);
+    var carHeight = 5 + 0.25 * Math.sin(carState.time * 5);
+    if(carState.fuelAmount < 0.1) carHeight = (2 * carState.fuelAmount * 10) + 3;
+    gl.translate(0, carHeight, -5.0);
     toggleAlpha(true);
     var trailSize = (Math.random() * 0.25 + 0.5);
     if(carState.accelerate) trailSize *= 10;
