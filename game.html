@@ -15,14 +15,18 @@ var gl = GL.create();
 var shaders = new Shaders();
 var terrain = new LevelOne();
 var car = new Car();
-car.x = terrain.carStart;
+
+var carState = loadCarState();
+function loadCarState() {
+    return { x: terrain.carStart, y: 0, speed: 0, accelerate: false, brake: false, fuelAmount: 1, acceleration: 0, time: 0 }
+}
 
 //wasd, 87 65 83 68
-var carState = { speed: 0, accelerate: false, brake: false, fuelAmount: 1, acceleration: 0, time: 0 };
-
+//uldr, 38 37 40 39
 function keyChange(code, pressed) { 
-    if(code == 68) carState.accelerate = pressed; 
-    if(code == 65) carState.brake = pressed; 
+    if(code == 68 || code == 39) carState.accelerate = pressed; 
+    if(code == 65 || code == 37) carState.brake = pressed; 
+    if(code == 82) carState = loadCarState();
 }
 
 document.body.onkeydown = function(e) { keyChange(e.keyCode, true); }
@@ -35,22 +39,19 @@ gl.onupdate = function(seconds) {
     carState.brake = carState.brake && carState.fuelAmount > 0;
 
     if(carState.accelerate) {
-        carState.speed += 60 * seconds;
-        carState.fuelAmount -= seconds / 20;
+        carState.speed += 90 * seconds;
+        carState.fuelAmount -= seconds / 10;
     }
     else if(carState.brake) {
-        carState.speed -= 60 * seconds;
-        carState.fuelAmount -= seconds / 20;
+        carState.speed -= 90 * seconds;
+        carState.fuelAmount -= seconds / 10;
     }
     else {
         carState.speed *= 0.9;
-        carState.fuelAmount -= seconds / 40;
+        carState.fuelAmount -= seconds / 30;
     }
 
-    if(carState.fuelAmount < 0)
-        carState.fuelAmount = 0;
-
-    var segment = Math.floor(car.x);
+    var segment = Math.floor(carState.x);
     var startHeight = terrain.ground.height[segment];
     var endHeight = terrain.ground.height[segment + 1];
 
@@ -59,15 +60,22 @@ gl.onupdate = function(seconds) {
     if(carState.speed > 100) carState.speed = 100;
     if(carState.speed < -100) carState.speed = -100; 
 
-
-    car.x += carState.speed * seconds;
-    if(car.x < 505) { car.x = 505 + 0.01; carState.speed = 1; }
-    if(car.x > terrain.finishLine ) { car.x = terrain.endPoint; carState.speed = 0; }
+    carState.x += carState.speed * seconds;
+    if(carState.x < 505) { carState.x = 505 + 0.01; carState.speed = 1; }
+    if(carState.x > terrain.finishLine ) { carState.speed = 0; }
 
     carState.acceleration = seconds == 0 ? 0 : (carState.speed - lastSpeed) / seconds;
-    car.y = mix(startHeight, endHeight, car.x - segment);
+    carState.y = mix(startHeight, endHeight, carState.x - segment);
 
-    document.getElementById("pos").textContent = car.x;
+    if(terrain.wells.indexOf(Math.floor(carState.x)) > -1 || terrain.wells.indexOf(Math.ceil(carState.x)) > -1)
+        carState.fuelAmount += seconds;
+
+    if(carState.fuelAmount < 0)
+        carState.fuelAmount = 0;
+    else if(carState.fuelAmount > 1)
+        carState.fuelAmount = 1;
+
+    document.getElementById("pos").textContent = carState.x + " " + seconds;
 };
 
 setupRender();

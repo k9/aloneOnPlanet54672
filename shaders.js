@@ -13,7 +13,7 @@ function Shaders() {
             vec3 light = vec3(-0.75, 0.5, 0.5);\
             vec3 view = normalize(vec3(-gl_ModelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0)));\
 			vec3 spec =  vec3(1.0, 1.0, 1.0) * pow(max(0.0, dot(reflect(-light, normal), view)), 10.0);\
-            float brightness = dot(normal, light) * 0.3 + 0.7;\
+            float brightness = dot(normal, light) * 0.3 + 0.6;\
             gl_FragColor = vec4(brightness + spec * 0.05, 1.0);\
         }\
     ');
@@ -21,27 +21,23 @@ function Shaders() {
     this.fuel = new GL.Shader('\
         varying vec3 normal;\
         uniform float amount;\
-        uniform float acceleration;\
-        uniform float time;\
         void main() {\
             normal = gl_Normal;\
-            vec4 pos = vec4(gl_Vertex.x * 0.95 * min(amount, 0.1) * 10.0 ,\
-            	max(min((gl_Vertex.y +\
-	            (-gl_Vertex.y * sin(gl_Vertex.x * time * 30.0) * 0.05) +\
-	            (-gl_Vertex.y * gl_Vertex.x * acceleration * 0.5)) * max(amount, 0.01), 1.5), 0.0),\
-	            gl_Vertex.z * 0.95 * min(amount, 0.1) * 10.0, 1.0);\
+            vec4 pos = vec4(gl_Vertex.x,\
+            	gl_Vertex.y * max(amount, 0.01),\
+	            gl_Vertex.z, 1.0);\
             gl_Position = gl_ModelViewProjectionMatrix * pos;\
         }\
         ', '\
         varying vec3 normal;\
         void main() {\
-            vec3 light = vec3(-0.75, 0.5, 0.5);\
-            float brightness = dot(normal, light) * 0.2 + 0.8;\
-            gl_FragColor = vec4(brightness * 0.0, brightness, brightness * 0.0, 1.0);\
+        	vec3 light = vec3(-0.75, 0.5, 0.5);\
+            float brightness = dot(normal, light) * 0.5 + 0.5;\
+            gl_FragColor = vec4(brightness * 0.2, brightness * 1.0, brightness * 0.2, 1.0);\
         }\
     ');
 
-     this.fuelCell = new GL.Shader('\
+     this.fuelGuage = new GL.Shader('\
         varying vec3 normal;\
         void main() {\
             normal = gl_Normal;\
@@ -52,11 +48,11 @@ function Shaders() {
         varying vec3 normal;\
         varying vec4 modelView;\
         void main() {\
-            vec3 light = vec3(-0.0, 1.0, 0.5);\
+            vec3 light = vec3(-0.75, 0.5, 0.5);\
             vec3 view = normalize(vec3(-gl_ModelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0)));\
 			vec3 spec =  vec3(1.0, 1.0, 1.0) * pow(max(0.0, dot(reflect(-light, normal), view)), 10.0);\
-            float brightness = dot(normal, light) * 0.5 + 0.5;\
-            gl_FragColor = vec4(brightness, brightness, brightness, 0.2);\
+            float brightness = dot(normal, light) * 0.3 + 0.1;\
+            gl_FragColor = vec4(brightness + spec * 0.25, 1.0);\
         }\
     ');
 

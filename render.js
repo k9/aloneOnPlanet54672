@@ -15,7 +15,7 @@ function render() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     placeCamera();
-    gl.translate(-car.x, -car.y, 0);
+    gl.translate(-carState.x, -carState.y, 0);
 
     var terrainColor = [0.8, 0.4, 0.3, 1];
     shaders.terrainNormals.uniforms({ color: terrainColor }).draw(terrain.groundDepth.mesh);
@@ -23,17 +23,13 @@ function render() {
     for(var i = 0; i < terrain.wells.length; i++) {
         placeCamera();
         var pos = terrain.wells[i];
-        gl.translate(pos - car.x, terrain.ground.height[pos] - car.y, -5);
+        gl.translate(pos - carState.x, terrain.ground.height[pos] - carState.y, -5);
         shaders.car.draw(terrain.wellMesh);
-        shaders.fuel.uniforms({ 
-            acceleration: 0, 
-            amount: 1.0,
-            time: Math.sin(carState.time * 5)
-        }).draw(terrain.wellFuelMesh);
+        shaders.fuel.uniforms({ amount: 1.0 }).draw(terrain.wellFuelMesh);
     }
 
     placeCamera();
-    gl.translate(-car.x, -car.y, 0);
+    gl.translate(-carState.x, -carState.y, 0);
 
     gl.translate(0, 0, -100);
     shaders.terrain.uniforms({ color: mixWithBG(terrainColor, 0.5) }).draw(terrain.backGround.mesh);
@@ -48,39 +44,28 @@ function render() {
     }
     
     placeCamera();
-    gl.translate(0, 4, -5.0);
+    gl.translate(0, 5 + 0.25 * Math.sin(carState.time * 5), -5.0);
     toggleAlpha(true);
-    var trailSize = (Math.random() * 0.25 + carState.fuelAmount);
+    var trailSize = (Math.random() * 0.25 + 0.5);
     if(carState.accelerate) trailSize *= 10;
     else if(carState.brake) trailSize *= -10;
 
     shaders.trail.uniforms({ speed: trailSize }).draw(car.trailMesh);
 
-    var downTrailSize =  (Math.random() * 0.25 + 0.75) * 0.75 + carState.fuelAmount;
+    var downTrailSize =  (Math.random() * 0.25 + 1.75);
     if(carState.fuelAmount > 0.01) 
         shaders.downTrail.uniforms({ speed: downTrailSize }).draw(car.trailMesh);
 
     toggleAlpha(false);
     shaders.car.uniforms({ speed: carState.speed }).draw(car.mesh);
 
-    gl.translate(0, -0.75, 0.9);
-    if(carState.fuelAmount > 0.01) {
-        var acceleration = Math.min(Math.max(carState.acceleration / 10.0, -1), 1);
-        acceleration = mix(oldAcceleration, acceleration, 0.05);
-        oldAcceleration = acceleration;
-        var time = Math.sin(carState.time * 10);
-        shaders.fuel.uniforms({ 
-            acceleration: acceleration, 
-            time: time, 
-            amount: carState.fuelAmount,
-            offsetX: 0,
-            offsetY: 0
-        }).draw(car.fuel);
-    }
+    gl.translate(0, -0.7, 0);    
+    shaders.fuelGuage.draw(car.fuelGuage);
 
-    toggleAlpha(true);
-    gl.translate(0, 0.75, -0.9);
-    shaders.fuelCell.draw(car.fuelCell);
+    gl.translate(0, 0.1, 0);
+    if(carState.fuelAmount > 0.01) {
+        shaders.fuel.uniforms({ amount: carState.fuelAmount }).draw(car.fuel);
+    }
 }
 
 function toggleAlpha(on) {
@@ -98,11 +83,11 @@ function toggleAlpha(on) {
 }
 
 function placeCamera() {
-    var tilt = carState.speed / 10 + 15;
+    var tilt = carState.speed / 8 + 15;
     gl.loadIdentity();
     gl.rotate(tilt, 0, 1, 0);
     gl.rotate(5, 1, 0, 0);
-    gl.translate(tilt, -15, -50);
+    gl.translate(tilt, -20, -50);
 }
 
 function setupRender() {

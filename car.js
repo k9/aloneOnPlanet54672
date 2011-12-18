@@ -1,14 +1,16 @@
 function Car() {
-	this.x = 0;
-	this.y = 0; 
-
-	var slices = 24, stacks = 24;
+	var slices = 20, stacks = 20;
 	var bodyMesh = CSG.cylinder({ start: [0, -1.5, 0], end: [0, 1.5, 0], radius: 1.5, slices: slices })
-		.intersect(CSG.sphere({ radius: 1.8, slices: slices, stacks: stacks, center: [0, 0, 0] }))
-	    .subtract(CSG.cylinder({ start: [0, -0.75, 0.9], end: [0, 0.75, 0.9], radius: 0.7, slices: slices }));
+		.intersect(CSG.sphere({ radius: 1.8, slices: slices, stacks: stacks, center: [0, 0, 0] }));
+	    //.subtract(CSG.cylinder({ start: [0, -0.75, 0.9], end: [0, 0.75, 0.9], radius: 0.7, slices: slices }));
 
-	this.fuelCell = CSG.cylinder({ start: [0, -0.75, 0.9], end: [0, 0.75, 0.9], radius: 0.7, slices: slices })
-	    .subtract(CSG.cylinder({ start: [0, -1.5, 0], end: [0, 1.5, 0], radius: 1.5, slices: slices })).toMesh();
+	this.fuel = CSG.cylinder({ start: [0, 0, 0], end: [0, 1.2, 0], radius: 1.6, slices: slices })
+	    .subtract(CSG.cube({ radius: 3.0, center: [3.25, 0.5, 0] }))
+	    .subtract(CSG.cube({ radius: 3.0, center: [-3.25, 0.5, 0] })).toMesh();
+
+	this.fuelGuage = CSG.cylinder({ start: [0, 0, 0], end: [0, 1.4, 0], radius: 1.55, slices: slices })
+	    .subtract(CSG.cube({ radius: 3.0, center: [3.35, 0.6, 0] }))
+	    .subtract(CSG.cube({ radius: 3.0, center: [-3.35, 0.6, 0] })).toMesh();
 
 	var slices = 16, stacks = 16;
 	var leftSphere = CSG.sphere({ radius: 1.0, slices: slices, stacks: stacks, center: [-2.25, 0, 0] })
@@ -26,7 +28,6 @@ function Car() {
 	this.mesh = leftSphere.union(rightSphere).union(bottomSphere).union(bodyMesh).toMesh();
 
 	var radius = 0.7, slices = 32;
-	this.fuel = CSG.cylinder({ start: [0, 0, 0], end: [0, 1.5, 0], radius: 0.7, slices: slices }).toMesh();
 
 	var trailSize = 30;
 	this.trailMesh = new GL.Mesh();
