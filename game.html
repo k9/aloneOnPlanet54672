@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html><body>
+<div id="game" style="width: 800px; margin: 0 auto"></div>
+<script src="lightgl.js"></script>
+<script src="utils.js"></script>
+<script src="render.js"></script>
+<script src="terrain.js"></script>
+<script>
+var angle = 0;
+var gl = GL.create();
+var shaders = {
+    car: new GL.Shader('\
+        void main() {\
+            gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\
+        }\
+        ', '\
+        void main() {\
+            gl_FragColor = vec4(0.4, 0.4, 0.4, 1.0);\
+        }\
+    '),
+    trail: new GL.Shader('\
+        void main() {\
+            gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\
+        }\
+        ', '\
+        void main() {\
+            gl_FragColor = vec4(0.4, 0.4, 1.0, 1.0);\
+        }\
+    '),
+    ground: new GL.Shader('\
+        void main() {\
+            gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\
+        }\
+        ', '\
+        uniform vec4 color;\
+        void main() {\
+            gl_FragColor = color;\
+        }\
+    ')
+};
+
+var terrain = new LevelOne();
+
+
+var car = { x: 300, y: 0, mesh: new GL.Mesh.sphere(), trailMesh: new GL.Mesh() };
+car.trailMesh.triangles = new Array(10 * 3);
+for(var i = 0; i < 10; i++) {
+    car.trailMesh.triangles[i * 3] = [Math.random() * 0.5 - 0.5, Math.random() * 0.5 - 0.5, 0];
+    car.trailMesh.triangles[i * 3 + 1] = [Math.random() * 0.5 - 0.5, Math.random() * 0.5 - 0.5, 0];
+    car.trailMesh.triangles[i * 3 + 2] = [Math.random() * 0.5 - 0.5, Math.random() * 0.5 - 0.5, 0];
+}
+
+
+//wasd, 87 65 83 68
+var carState = { speed: 0, accelerate: false, brake: false };
+document.body.onkeydown = function(e) { 
+    if(e.keyCode == 87) carState.accelerate = true; 
+    if(e.keyCode == 83) carState.brake = true; 
+}
+
+document.body.onkeyup = function(e) { 
+    if(e.keyCode == 87) carState.accelerate = false; 
+    if(e.keyCode == 83) carState.brake = false;
+}
+
+gl.onupdate = function(seconds) {
+    if(carState.accelerate)
+        carState.speed += 60 * seconds;
+    else if(carState.brake)
+        carState.speed -= 50 * seconds;
+    else
+        carState.speed /= 1 + (seconds / 2);
+
+    var segment = Math.floor(car.x);
+    var startHeight = terrain.ground.height[segment];
+    var endHeight = terrain.ground.height[segment + 1];
+
+    carState.speed += (startHeight - endHeight) * 100 * seconds;
+
+    if(carState.speed > 200) carState.speed = 200;
+    if(carState.speed < -100) carState.speed = -100; 
+
+    car.x += carState.speed * seconds;
+    if(car.x < terrain.startPoint) { car.x = terrain.startPoint; carState.speed = 0; }
+    if(car.x < terrain.startPoint) { car.x = terrain.startPoint; carState.speed = 0; }
+
+    car.y = mix(startHeight, endHeight, car.x - segment);
+};
+
+setupRender();
+document.getElementById("game").appendChild(gl.canvas);
+gl.ondraw = render;
+gl.animate();
+</script>
+</body>
+</html>
