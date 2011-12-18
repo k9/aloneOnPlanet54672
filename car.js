@@ -1,14 +1,12 @@
 function Car() {
 	this.x = 300;
 	this.y = 0; 
-	this.fuelCell = new GL.Mesh.sphere({ detail: 6, normals: true });
-	this.trailMesh = new GL.Mesh();
 
-	var slices = 24, stacks = 24;
+	var slices = 16, stacks = 16;
 	var bodyMesh = CSG.cube({ radius: 1.25, center: [0, 0, 0] })
 	    .intersect(CSG.sphere({ radius: 1.5, slices: slices, stacks: stacks, center: [0, 0, 0] }));
 
-	var slices = 16, stacks = 16;
+	var slices = 12, stacks = 12;
 	var leftSphere = CSG.sphere({ radius: 1.0, slices: slices, stacks: stacks, center: [-2, 0, 0] })
 	    .subtract(CSG.sphere({ radius: 0.9, slices: slices, stacks: stacks, center: [-2, 0, 0] }))
 	    .subtract(CSG.cube({ radius: 1.0, center: [-3.0, 0, 0] }));
@@ -27,8 +25,8 @@ function Car() {
 	this.fuelCell = CSG.cylinder({ start: [0, 0, 0], end: [0, 1.75, 0], radius: radius, slices: slices })
 		.intersect(CSG.sphere({ radius: 1.3, slices: slices, stacks: stacks, center: [0, 0.25, 0] })).toMesh();
 
-
 	var trailSize = 30;
+	this.trailMesh = new GL.Mesh();
 	this.trailMesh.triangles = new Array(trailSize * 3);
 	this.trailMesh.indices = new Array(trailSize * 3)
 	for(var i = 0; i < trailSize; i++) {

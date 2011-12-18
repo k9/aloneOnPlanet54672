@@ -17,21 +17,22 @@ function render() {
     gl.translate(-car.x, -car.y, 0);
 
     var terrainColor = [0.8, 0.4, 0.3, 1];
-    shaders.ground.uniforms({ color: terrainColor }).draw(terrain.ground.mesh);
+    shaders.terrainNormals.uniforms({ color: terrainColor }).draw(terrain.groundDepth.mesh);
+    shaders.terrain.uniforms({ color: terrainColor }).draw(terrain.ground.mesh);
     gl.translate(0, 0, -100);
-    shaders.ground.uniforms({ color: mixWithBG(terrainColor, 0.5) }).draw(terrain.backGround.mesh);
+    shaders.terrain.uniforms({ color: mixWithBG(terrainColor, 0.5) }).draw(terrain.backGround.mesh);
     gl.translate(0, 0, -100);
-    shaders.ground.uniforms({ color: mixWithBG(terrainColor, 0.7) }).draw(terrain.backGround2.mesh);
+    shaders.terrain.uniforms({ color: mixWithBG(terrainColor, 0.7) }).draw(terrain.backGround2.mesh);
     gl.translate(0, 0, -100);
-    shaders.ground.uniforms({ color: mixWithBG(terrainColor, 0.9) }).draw(terrain.backGround3.mesh);
+    shaders.terrain.uniforms({ color: mixWithBG(terrainColor, 0.9) }).draw(terrain.backGround3.mesh);
 
     for(var i = 0; i < 1; i += 0.1) {
         gl.translate(0, -33, -10);
-        shaders.ground.uniforms({ color: mixWithBG([1.0, 1.0, 1.0, 1.0], i) }).draw(terrain.sky.mesh);
+        shaders.terrain.uniforms({ color: mixWithBG([1.0, 1.0, 1.0, 1.0], i) }).draw(terrain.sky.mesh);
     }
     
     placeCamera();
-    gl.translate(0, 1.75 + carState.fuelAmount, 0);
+    gl.translate(0, 1.75 + carState.fuelAmount, -2.5);
     toggleAlpha(true);
     var trailSize = (Math.random() * 0.25 + carState.fuelAmount);
     if(carState.accelerate) trailSize *= 5;
@@ -70,9 +71,9 @@ function toggleAlpha(on) {
 
 function placeCamera() {
     gl.loadIdentity();
-    gl.rotate(Math.min(carState.speed / 5, 30) * 0, 0, 1, 0);
+    gl.rotate(Math.min(carState.speed / 5, 30), 0, 1, 0);
     gl.rotate(15, 1, 0, 0);
-    gl.translate(Math.min(carState.speed / 5, 100) * 0, -20, -50);
+    gl.translate(Math.min(carState.speed / 5, 100), -20, -50);
 }
 
 function setupRender() {

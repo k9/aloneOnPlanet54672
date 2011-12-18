@@ -79,7 +79,7 @@ function Shaders() {
         }\
     ');
 
-    this.ground = new GL.Shader('\
+    this.terrain = new GL.Shader('\
         void main() {\
             gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\
         }\
@@ -87,6 +87,22 @@ function Shaders() {
         uniform vec4 color;\
         void main() {\
             gl_FragColor = color;\
+        }\
+    ');
+
+    this.terrainNormals = new GL.Shader('\
+        varying vec3 normal;\
+        void main() {\
+        	normal = gl_Normal;\
+            gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\
+        }\
+        ', '\
+        uniform vec4 color;\
+        varying vec3 normal;\
+        void main() {\
+            vec3 light = vec3(-0.75, 0.5, 0.5);\
+            float brightness = dot(normal, light) * 0.25 + 0.75;\
+            gl_FragColor = brightness * color;\
         }\
     ');
 }
