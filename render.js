@@ -8,6 +8,7 @@ function mixWithBG(color, m) {
     ];
 }
 
+var oldAcceleration = 0;
 function render() {
     toggleAlpha(false);
     gl.clearColor(bg[0], bg[1], bg[2], bg[3]);
@@ -32,11 +33,11 @@ function render() {
     }
     
     placeCamera();
-    gl.translate(0, 1.75 + carState.fuelAmount, -2.5);
+    gl.translate(0, 2.25 + carState.fuelAmount, -3.0);
     toggleAlpha(true);
     var trailSize = (Math.random() * 0.25 + carState.fuelAmount);
-    if(carState.accelerate) trailSize *= 5;
-    else if(carState.brake) trailSize *= -5;
+    if(carState.accelerate) trailSize *= 10;
+    else if(carState.brake) trailSize *= -10;
 
     shaders.trail.uniforms({ speed: trailSize }).draw(car.trailMesh);
 
@@ -47,11 +48,16 @@ function render() {
     toggleAlpha(false);
     shaders.car.uniforms({ speed: carState.speed }).draw(car.mesh);
 
-    gl.translate(0, 1.25, 0);
-    if(carState.fuelAmount > 0.01) 
-        shaders.fuel.uniforms({ amount: carState.fuelAmount }).draw(car.fuelCell);
+    gl.translate(0, -0.7, 0.9);
+    if(carState.fuelAmount > 0.01) {
+        var acceleration = Math.min(Math.max(carState.acceleration / 100.0, -1), 1);
+        acceleration = mix(oldAcceleration, acceleration, 0.2);
+        var time = Math.sin(carState.time * 10);
+        shaders.fuel.uniforms({ acceleration: acceleration, time: time , amount: carState.fuelAmount }).draw(car.fuel);
+    }
 
     toggleAlpha(true);
+    gl.translate(0, 0.7, -0.9);
     shaders.fuelCell.draw(car.fuelCell);
 }
 
@@ -72,8 +78,8 @@ function toggleAlpha(on) {
 function placeCamera() {
     gl.loadIdentity();
     gl.rotate(Math.min(carState.speed / 5, 30), 0, 1, 0);
-    gl.rotate(15, 1, 0, 0);
-    gl.translate(Math.min(carState.speed / 5, 100), -20, -50);
+    gl.rotate(5, 1, 0, 0);
+    gl.translate(Math.min(carState.speed / 10, 100), -15, -40);
 }
 
 function setupRender() {
@@ -82,7 +88,7 @@ function setupRender() {
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
     gl.matrixMode(gl.PROJECTION);
     gl.loadIdentity();
-    gl.perspective(35, gl.canvas.width / gl.canvas.height, 0.1, 1000);
+    gl.perspective(45, gl.canvas.width / gl.canvas.height, 0.1, 1000);
     gl.matrixMode(gl.MODELVIEW);
     gl.enable(gl.DEPTH_TEST);
 }

@@ -17,7 +17,7 @@ var terrain = new LevelOne();
 var car = new Car();
 
 //wasd, 87 65 83 68
-var carState = { speed: 0, accelerate: false, brake: false, fuelAmount: 1 };
+var carState = { speed: 0, accelerate: false, brake: false, fuelAmount: 1, acceleration: 0, time: 0 };
 
 function keyChange(code, pressed) { 
     if(code == 68) carState.accelerate = pressed; 
@@ -28,6 +28,8 @@ document.body.onkeydown = function(e) { keyChange(e.keyCode, true); }
 document.body.onkeyup = function(e) { keyChange(e.keyCode, false); }
 
 gl.onupdate = function(seconds) {
+    carState.time += seconds;
+    var lastSpeed = carState.speed;
     carState.accelerate = carState.accelerate && carState.fuelAmount > 0;
     carState.brake = carState.brake && carState.fuelAmount > 0;
 
@@ -55,13 +57,14 @@ gl.onupdate = function(seconds) {
 
     carState.speed += (startHeight - endHeight) * 500 * seconds;
 
-    if(carState.speed > 200) carState.speed = 200;
+    if(carState.speed > 100) carState.speed = 100;
     if(carState.speed < -100) carState.speed = -100; 
 
     car.x += carState.speed * seconds;
     if(car.x < terrain.startPoint) { car.x = terrain.startPoint; carState.speed = 0; }
     if(car.x < terrain.startPoint) { car.x = terrain.startPoint; carState.speed = 0; }
 
+    carState.acceleration = (carState.speed - lastSpeed) / seconds;
     car.y = mix(startHeight, endHeight, car.x - segment);
 };
 

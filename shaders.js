@@ -1,27 +1,35 @@
 function Shaders() {
     this.car = new GL.Shader('\
         varying vec3 normal;\
-        uniform float speed;\
         void main() {\
             normal = gl_Normal;\
-            vec4 pos = vec4(gl_Vertex.x, gl_Vertex.y, gl_Vertex.z, 1.0);\
+            vec4 pos = vec4(gl_Vertex.xyz * 1.0, 1.0);\
             gl_Position = gl_ModelViewProjectionMatrix * pos;\
         }\
         ', '\
         varying vec3 normal;\
+        varying vec4 modelView;\
         void main() {\
             vec3 light = vec3(-0.75, 0.5, 0.5);\
-            float brightness = dot(normal, light) * 0.5 + 0.5;\
-            gl_FragColor = vec4(brightness, brightness, brightness, 1.0);\
+            vec3 view = normalize(vec3(-gl_ModelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0)));\
+			vec3 spec =  vec3(1.0, 1.0, 1.0) * pow(max(0.0, dot(reflect(-light, normal), view)), 10.0);\
+            float brightness = dot(normal, light) * 0.25 + 0.75;\
+            gl_FragColor = vec4(brightness + spec * 0.05, 1.0);\
         }\
     ');
 
     this.fuel = new GL.Shader('\
         varying vec3 normal;\
         uniform float amount;\
+        uniform float acceleration;\
+        uniform float time;\
         void main() {\
             normal = gl_Normal;\
-            vec4 pos = vec4(gl_Vertex.x * 0.7, gl_Vertex.y * 0.95 * amount, gl_Vertex.z * 0.7, 1.0);\
+            vec4 pos = vec4(gl_Vertex.x * 0.95 * min(amount, 0.1) * 10.0,\
+            	(gl_Vertex.y * 0.95 + \
+	            (-gl_Vertex.y * sin(gl_Vertex.x * time) * 0.1) -\
+	            (-gl_Vertex.y * gl_Vertex.x * acceleration  * 0.1)) * max(amount, 0.01),\
+	             gl_Vertex.z * 0.95 * min(amount, 0.1) * 10.0, 1.0);\
             gl_Position = gl_ModelViewProjectionMatrix * pos;\
         }\
         ', '\
@@ -29,7 +37,7 @@ function Shaders() {
         void main() {\
             vec3 light = vec3(-0.75, 0.5, 0.5);\
             float brightness = dot(normal, light) * 0.5 + 0.5;\
-            gl_FragColor = vec4(brightness * 0.5, brightness, brightness * 0.5, 1.0);\
+            gl_FragColor = vec4(brightness * 0.05, brightness, brightness * 0.05, 1.0);\
         }\
     ');
 
@@ -42,10 +50,13 @@ function Shaders() {
         }\
         ', '\
         varying vec3 normal;\
+        varying vec4 modelView;\
         void main() {\
-            vec3 light = vec3(-0.75, 0.5, 0.5);\
+            vec3 light = vec3(-0.0, 1.0, 0.5);\
+            vec3 view = normalize(vec3(-gl_ModelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0)));\
+			vec3 spec =  vec3(1.0, 1.0, 1.0) * pow(max(0.0, dot(reflect(-light, normal), view)), 10.0);\
             float brightness = dot(normal, light) * 0.5 + 0.5;\
-            gl_FragColor = vec4(brightness * 0.75, brightness * 0.75, brightness, 0.25);\
+            gl_FragColor = vec4(0.0, 0.0, brightness, 0.2);\
         }\
     ');
 
@@ -86,7 +97,8 @@ function Shaders() {
         ', '\
         uniform vec4 color;\
         void main() {\
-            gl_FragColor = color;\
+        	float dist = pow(distance(vec2(gl_FragCoord.x / 800.0, gl_FragCoord.y / 600.0), vec2(0.5, 0.5)), 2.0);\
+            gl_FragColor = color - dist * 0.5;\
         }\
     ');
 
@@ -101,8 +113,9 @@ function Shaders() {
         varying vec3 normal;\
         void main() {\
             vec3 light = vec3(-0.75, 0.5, 0.5);\
-            float brightness = dot(normal, light) * 0.25 + 0.75;\
-            gl_FragColor = brightness * color;\
+            float brightness = dot(normal, light) * 0.5 + 0.5;\
+            float dist = pow(distance(vec2(gl_FragCoord.x / 800.0, gl_FragCoord.y / 600.0), vec2(0.5, 0.5)), 2.0);\
+            gl_FragColor = brightness * color - dist * 0.5;\
         }\
     ');
 }

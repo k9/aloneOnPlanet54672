@@ -28,7 +28,7 @@ function makeGroundLayer(size, lod, heightFn, isSky, isDeep) {
         if(isDeep) {
         	var prev = layer.height[Math.max(i - 1, 0)];
         	var next = layer.height[Math.min(i + 1, layer.height.length - 1)];
-        	var normal = new CSG.Vector(2.0, next - prev, 0).cross(new CSG.Vector(0, 0, 1)).unit();
+        	var normal = new CSG.Vector(2.0, next - prev, 0).cross(new CSG.Vector(0, 0, -1)).unit();
 
 	        layer.mesh.normals[i * vertsPerMeter] = [normal.x, normal.y, normal.z];
 	        layer.mesh.normals[i * vertsPerMeter + 1] = [normal.x, normal.y, normal.z];
