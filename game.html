@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html><body style="background: #6d6d6d">
-<div id="game" style="width: 800px; margin: 0 auto"></div>
+<div id="game" style="width: 800px; margin: 0 auto"><p id="pos"></p></div>
 <script src="libs/lightgl.js"></script>
 <script src="libs/csg.js"></script>
 <script src="libs/viewer.js"></script>
@@ -15,6 +15,7 @@ var gl = GL.create();
 var shaders = new Shaders();
 var terrain = new LevelOne();
 var car = new Car();
+car.x = terrain.carStart;
 
 //wasd, 87 65 83 68
 var carState = { speed: 0, accelerate: false, brake: false, fuelAmount: 1, acceleration: 0, time: 0 };
@@ -35,21 +36,19 @@ gl.onupdate = function(seconds) {
 
     if(carState.accelerate) {
         carState.speed += 60 * seconds;
-        carState.fuelAmount -= seconds / 10;
+        carState.fuelAmount -= seconds / 20;
     }
     else if(carState.brake) {
         carState.speed -= 60 * seconds;
-        carState.fuelAmount -= seconds / 10;
+        carState.fuelAmount -= seconds / 20;
     }
     else {
-        carState.speed /= 1 + (seconds / 2);
-        carState.fuelAmount -= seconds / 30;
+        carState.speed *= 0.9;
+        carState.fuelAmount -= seconds / 40;
     }
 
-    if(carState.fuelAmount < 0) {
+    if(carState.fuelAmount < 0)
         carState.fuelAmount = 0;
-        carState.speed *= 0.9;
-    }
 
     var segment = Math.floor(car.x);
     var startHeight = terrain.ground.height[segment];
@@ -60,12 +59,15 @@ gl.onupdate = function(seconds) {
     if(carState.speed > 100) carState.speed = 100;
     if(carState.speed < -100) carState.speed = -100; 
 
-    car.x += carState.speed * seconds;
-    if(car.x < terrain.startPoint) { car.x = terrain.startPoint; carState.speed = 0; }
-    if(car.x < terrain.startPoint) { car.x = terrain.startPoint; carState.speed = 0; }
 
-    carState.acceleration = (carState.speed - lastSpeed) / seconds;
+    car.x += carState.speed * seconds;
+    if(car.x < 505) { car.x = 505 + 0.01; carState.speed = 1; }
+    if(car.x > terrain.finishLine ) { car.x = terrain.endPoint; carState.speed = 0; }
+
+    carState.acceleration = seconds == 0 ? 0 : (carState.speed - lastSpeed) / seconds;
     car.y = mix(startHeight, endHeight, car.x - segment);
+
+    document.getElementById("pos").textContent = car.x;
 };
 
 setupRender();

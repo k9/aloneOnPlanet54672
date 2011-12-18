@@ -19,7 +19,7 @@ function makeGroundLayer(size, lod, heightFn, isSky, isDeep) {
 
         if(isDeep) {
         	y = layer.height[i];
-        	z = -5;
+        	z = -10;
         }
 
         layer.mesh.vertices[i * vertsPerMeter] = [i * lod, y, z];
@@ -46,8 +46,23 @@ function makeGroundLayer(size, lod, heightFn, isSky, isDeep) {
 }
 
 function LevelOne() {
+	var slices = 24;
+	this.wellFuelMesh = CSG.cylinder({ start: [0, -1.25, 0], end: [0, 1.0, 0], radius: 0.7, slices: slices }).toMesh();
+	this.wellMesh = CSG.cylinder({ start: [0, -1.25, 0], end: [0, 1.0, 0], radius: 2.5, slices: slices })
+		.subtract(CSG.cylinder({ start: [0, -1.6, 0], end: [0, 1.6, 0], radius: 0.8, slices: slices }))
+		.subtract(CSG.cylinder({ start: [0, 0.8, 0], end: [0, 1.6, 0], radius: 1.25, slices: slices }))
+		.intersect(CSG.sphere({ radius: 4.00, center: [0, -2.5, 0], slices: slices })).toMesh();
+
+	this.carStart = 650;
+	this.finishLine = 3500;
+	this.wells = [716, 800];
+
 	var groundFn = function(i) { 
-		return Math.sin(i / 9) * 1.5 + Math.sin(i / 30) * 5 + Math.sin(i / 40) * 5 + 100; 
+		var h = Math.sin(i / 9) * 1.5 + Math.sin(i / 30) * 4 + Math.sin(i / 40) * 4; 
+		if(i < 550) h *= (i - 500) / 50;
+		if(i < 500) h += 100;
+		h += 100;
+		return h;
 	};
 
 	this.ground = makeGroundLayer(4096, 1, groundFn, false, false);

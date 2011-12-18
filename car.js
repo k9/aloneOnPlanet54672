@@ -1,5 +1,5 @@
 function Car() {
-	this.x = 300;
+	this.x = 0;
 	this.y = 0; 
 
 	var slices = 24, stacks = 24;
@@ -25,7 +25,7 @@ function Car() {
 
 	this.mesh = leftSphere.union(rightSphere).union(bottomSphere).union(bodyMesh).toMesh();
 
-	var radius = 0.7;
+	var radius = 0.7, slices = 32;
 	this.fuel = CSG.cylinder({ start: [0, 0, 0], end: [0, 1.5, 0], radius: 0.7, slices: slices }).toMesh();
 
 	var trailSize = 30;
