@@ -1,65 +1,59 @@
 <!DOCTYPE html>
 <html><body style="background: #6d6d6d">
 <div id="game" style="width: 800px; margin: 0 auto"></div>
-<script src="lightgl.js"></script>
+<script src="libs/lightgl.js"></script>
+<script src="libs/csg.js"></script>
+<script src="libs/viewer.js"></script>
 <script src="utils.js"></script>
 <script src="shaders.js"></script>
 <script src="render.js"></script>
 <script src="terrain.js"></script>
+<script src="car.js"></script>
 <script>
 var angle = 0;
 var gl = GL.create();
 var shaders = new Shaders();
 var terrain = new LevelOne();
-
-var car = { 
-    x: 300, 
-    y: 0, 
-    mesh: new GL.Mesh.sphere({ detail: 6, normals: true }),
-    fuelCell: new GL.Mesh.sphere({ detail: 6, normals: true }),
-    trailMesh: new GL.Mesh() 
-};
-
-var trailSize = 30;
-car.trailMesh.triangles = new Array(trailSize * 3);
-car.trailMesh.indices = new Array(trailSize * 3)
-for(var i = 0; i < trailSize; i++) {
-    var x = i / trailSize;
-    car.trailMesh.vertices[i * 3] = [-(0.4 + x), 1 - x, 0];
-    car.trailMesh.vertices[i * 3 + 1] = [-(0.4 + x), -1 + x, 0];
-    car.trailMesh.vertices[i * 3 + 2] = [-x, 0, 0];
-    car.trailMesh.triangles[i * 3] = i * 3;
-    car.trailMesh.triangles[i * 3 + 1] = i * 3 + 1;
-    car.trailMesh.triangles[i * 3 + 2] = i * 3 + 2;
-}
-car.trailMesh.compile();
-
+var car = new Car();
 
 //wasd, 87 65 83 68
-var carState = { speed: 0, accelerate: false, brake: false };
-document.body.onkeydown = function(e) { 
-    if(e.keyCode == 87) carState.accelerate = true; 
-    if(e.keyCode == 83) carState.brake = true; 
+var carState = { speed: 0, accelerate: false, brake: false, fuelAmount: 1 };
+
+function keyChange(code, pressed) { 
+    if(code == 68) carState.accelerate = pressed; 
+    if(code == 65) carState.brake = pressed; 
 }
 
-document.body.onkeyup = function(e) { 
-    if(e.keyCode == 87) carState.accelerate = false; 
-    if(e.keyCode == 83) carState.brake = false;
-}
+document.body.onkeydown = function(e) { keyChange(e.keyCode, true); }
+document.body.onkeyup = function(e) { keyChange(e.keyCode, false); }
 
 gl.onupdate = function(seconds) {
-    if(carState.accelerate)
+    carState.accelerate = carState.accelerate && carState.fuelAmount > 0;
+    carState.brake = carState.brake && carState.fuelAmount > 0;
+
+    if(carState.accelerate) {
         carState.speed += 60 * seconds;
-    else if(carState.brake)
+        carState.fuelAmount -= seconds / 10;
+    }
+    else if(carState.brake) {
         carState.speed -= 60 * seconds;
-    else
+        carState.fuelAmount -= seconds / 10;
+    }
+    else {
         carState.speed /= 1 + (seconds / 2);
+        carState.fuelAmount -= seconds / 30;
+    }
+
+    if(carState.fuelAmount < 0) {
+        carState.fuelAmount = 0;
+        carState.speed *= 0.9;
+    }
 
     var segment = Math.floor(car.x);
     var startHeight = terrain.ground.height[segment];
     var endHeight = terrain.ground.height[segment + 1];
 
-    carState.speed += (startHeight - endHeight) * 100 * seconds;
+    carState.speed += (startHeight - endHeight) * 500 * seconds;
 
     if(carState.speed > 200) carState.speed = 200;
     if(carState.speed < -100) carState.speed = -100; 

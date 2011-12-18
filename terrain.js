@@ -1,20 +1,27 @@
-function makeGroundLayer(size, lod, heightFn, isSky) {
+function makeGroundLayer(size, lod, heightFn, isSky, isDeep) {
+	var vertsPerMeter = (isDeep ? 3 : 2);
+	var indicesPerMeter = (isDeep ? 12 : 6);
+	var indicesPattern = [0, 1, 2, 1, 3, 2];
+
     var layer = { height: new Array(size / lod), mesh: new GL.Mesh() };
-    layer.mesh.vertices = new Array(layer.height.length * 2);
-    layer.mesh.triangles = new Array((layer.height.length - 1) * 6);
+    layer.mesh.vertices = new Array(layer.height.length * vertsPerMeter);
+    layer.mesh.triangles = new Array((layer.height.length - 1) * indicesPerMeter);
 
     for(var i = 0; i < size / lod; i++) {
         layer.height[i] = heightFn(i * lod);
-        layer.mesh.vertices[i * 2 + 1] = [i * lod, isSky ? 1000 : 0, 0];
-        layer.mesh.vertices[i * 2] = [i * lod, layer.height[i], 0];
+        layer.mesh.vertices[i * vertsPerMeter] = [i * lod, isSky ? 1000 : 0, 0];
+        layer.mesh.vertices[i * vertsPerMeter + 1] = [i * lod, layer.height[i], 0];
+        
+        if(isDeep) layer.mesh.vertices[i * vertsPerMeter + 2] = [i * lod, layer.height[i], -5];
 
         if(i != layer.height.length - 1) {
-            layer.mesh.triangles[i * 6] = i * 2;
-            layer.mesh.triangles[i * 6 + 1] = i * 2 + 1;
-            layer.mesh.triangles[i * 6 + 2] = i * 2 + 2;
-            layer.mesh.triangles[i * 6 + 3] = i * 2 + 1;
-            layer.mesh.triangles[i * 6 + 4] = i * 2 + 3;
-            layer.mesh.triangles[i * 6 + 5] = i * 2 + 2;
+        	var start = i * indicesPerMeter;
+        	for(var k in indicesPattern)
+            	layer.mesh.triangles[start + k] = i * vertsPerMeter + indicesPattern[k];
+
+            if(isDeep) {
+            	
+            }
         }
     }
 
