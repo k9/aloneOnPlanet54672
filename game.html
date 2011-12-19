@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-<body style="background: #6d6d6d">
+<body style="background: #222">
 <head>
 <title>Game</title>
 <style>
@@ -22,10 +22,10 @@ ul { list-style-type: square }
 <div id="game" style="width: 800px; margin: 0 auto">
 
 <div class="text" id="text1">
-<h1>You have been abondoned by your employer, SpaceExplore Inc.</h1>
+<h1>You have been abandoned by your employer, SpaceCorp, Inc.</h1>
 <ul>
-<li>A long way east is a transport away from here.</li>
-<li>You burn fuel all the time; even more when using the left or right thrusters.</li>
+<li>A long way east, there is a transport back home.</li>
+<li>You burn fuel all the time &ndash; even more when using the left or right thrusters.</li>
 <li>Watch the green fuel guage. Hover over the fuel stations to refuel.</li>
 <li>To get over tough hills, back up and then go forward to gain momentum.</li>
 </ul>
@@ -62,7 +62,7 @@ function loadNextLevel() {
     if(currentLevel == 1) { level = new LevelOne(); }
     if(currentLevel == 2) { level = new LevelTwo(); }
     if(currentLevel == 3) { 
-        document.getElementById("loadingText").textContent = "Success"; 
+        document.getElementById("loadingText").textContent = "You made it. Congratulations."; 
         gl.onupdate = null;
         return; 
     }
@@ -97,17 +97,16 @@ function keyChange(code, pressed) {
     if(code == 82) carState = loadCarState();
 }
 
-document.body.onkeydown = function(e) { keyChange(e.keyCode, true); }
-document.body.onkeyup = function(e) { keyChange(e.keyCode, false); }
+document.onkeydown = function(e) { keyChange(e.keyCode, true); }
+document.onkeyup = function(e) { keyChange(e.keyCode, false); }
 
-gl.onupdate = function(seconds) {
-    if(carState.x > terrain.finishLine ) {
-        if(!carState.finish) {
-            terrain = loadNextLevel(); 
-            carState = loadCarState();
-        }
-        carState.finish = true; 
-        carState.speed = 0; return; 
+gl.onupdate = glUpdate;
+
+function glUpdate(seconds) {
+    if(carState.x > terrain.finishLine) {
+        terrain = loadNextLevel(); 
+        carState = loadCarState();
+        return; 
     }
 
     carState.time += seconds;
@@ -139,6 +138,7 @@ gl.onupdate = function(seconds) {
 
     carState.x += carState.speed * seconds;
     if(carState.x < 505) { carState.x = 505 + 0.01; carState.speed = 1; }
+    if(carState.x > terrain.finishLine) carState.x = terrain.finishLine + 0.1;
 
     carState.y = mix(startHeight, endHeight, carState.x - segment);
 

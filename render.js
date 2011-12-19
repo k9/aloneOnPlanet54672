@@ -70,7 +70,7 @@ function render() {
     }
 
     placeCamera();
-    var pos = terrain.finishLine;
+    var pos = terrain.finishLine + 1;
     gl.translate(pos - carState.x, terrain.ground.height[pos] - carState.y, -5);
     toggleAlpha(true);
     shaders.finish.uniforms({ size: 0.75 + Math.sin(carState.time * 5) * 0.5 }).draw(terrain.finishMesh);
@@ -79,13 +79,13 @@ function render() {
 
 function toggleAlpha(on) {
     if(on) {
-        gl.enable(gl.ALPHA);
+        //gl.enable(gl.ALPHA);
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA)
         gl.disable(gl.DEPTH_TEST);
     }
     else {
-        gl.disable(gl.ALPHA);
+        //gl.disable(gl.ALPHA);
         gl.disable(gl.BLEND);
         gl.enable(gl.DEPTH_TEST);    
     }

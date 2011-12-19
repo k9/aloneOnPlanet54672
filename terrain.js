@@ -60,7 +60,7 @@ function initLevel(level, size, groundFn) {
 		.subtract(CSG.cylinder({ start: [0, 0.7, 0], end: [0, 1.6, 0], radius: 1.25, slices: slices }))
 		.intersect(CSG.sphere({ radius: 4.00, center: [0, -2.5, 0], slices: slices })).toMesh();
 
-	level.finishMesh = CSG.sphere({ radius: 6.00, center: [0, 3, 0], slices: slices, stacks: slices }).toMesh();
+	level.finishMesh = CSG.sphere({ radius: 6.00, center: [0, 4, 0], slices: slices, stacks: slices }).toMesh();
 
 	level.ground = makeGroundLayer(size, 1, groundFn, false, false);
 	level.groundDepth = makeGroundLayer(size, 1, groundFn, false, true);
@@ -81,11 +81,11 @@ function initLevel(level, size, groundFn) {
 function LevelOne() {
 	this.terrainColor = [0.8, 0.4, 0.3, 1];;
 	this.skyColor = [0.5, 0.6, 1.0, 1.0];
-	this.carStart = 685;
+	this.carStart = 683;
 	this.finishLine = 1400;
 	this.wells = [683, 840];
 
-	initLevel(this, 2048, function(i) { 
+	initLevel(this, 4096, function(i) { 
 		var h = Math.cos(i / 8) * 2.5 + Math.sin(i / 30) * 8.0 + Math.sin(i / 60) * 3.5; 
 		return playableHeight(i, h);
 	});
@@ -98,7 +98,7 @@ function LevelTwo() {
 	this.finishLine = 3400;
 	this.wells = [680, 940, 1678, 2300, 3159];
 
-	initLevel(this, 4096, function(i) { 
+	initLevel(this, 8192, function(i) { 
 		var h = Math.sin(i / 9) * 1.5 + Math.sin(i / 30) * 5 + Math.sin(i / 40) * 5; 
 		return playableHeight(i, h);
 	});
